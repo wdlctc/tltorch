@@ -16,7 +16,6 @@ class ComplexHandler():
         if isinstance(value, (FactorList)):
             value = ComplexFactorList(value)
             super().__setattr__(key, value)
-            
         elif isinstance(value, nn.Parameter):
             self.register_parameter(key, value)
         elif torch.is_tensor(value):
@@ -26,16 +25,25 @@ class ComplexHandler():
 
     def __getattr__(self, key):
         value = super().__getattr__(key)
-        if torch.is_tensor(value):
-            value = torch.view_as_complex(value)
+        try:
+            if torch.is_tensor(value):
+                value = torch.view_as_complex(value)
+        except:
+            value = value
         return value
 
     def register_parameter(self, key, value):
-        value = nn.Parameter(torch.view_as_real(value))
+        try:
+            value = nn.Parameter(torch.view_as_real(value))
+        except:
+            value = nn.Parameter(value)
         super().register_parameter(key, value)
 
     def register_buffer(self, key, value):
-        value = torch.view_as_real(value)
+        try:
+            value = value
+        except:
+            value = torch.view_as_real(value)
         super().register_buffer(key, value)
 
 
